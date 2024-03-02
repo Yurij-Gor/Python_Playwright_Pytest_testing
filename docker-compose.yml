@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  test_runner:
+    build: .
+    image: pytest_runner
+    container_name: pytest_runner_works1
+    environment:
+      - ENV=prod
+    volumes:
+      - .:/tests_project/
+    command: ["python", "-m", "pytest", "-s", "--alluredir=test_results/", "tests/"]
