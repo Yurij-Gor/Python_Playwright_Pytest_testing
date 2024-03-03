@@ -12,25 +12,27 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
-    services:
-      docker:
-        image: docker:19.03.12
-        options: --privileged
-        ports:
-          - 2375:2375
-
     steps:
     - uses: actions/checkout@v2
-
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
-    - name: Build and Run tests
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Build Docker Image
       run: |
-        docker-compose up --build --abort-on-container-exit
+        docker-compose build
+
+    - name: Run Tests in Docker
+      run: |
+        docker-compose up --exit-code-from test_runner
 
     - name: Create Allure results directory
       run: |
@@ -42,10 +44,12 @@ jobs:
         docker cp pytest_runner_works1:/tests_project/test_results ./test_results
 
     - name: Generate Allure Report
-      run: allure generate ./test_results -o ./allure-report --clean
+      run: |
+        docker-compose run --rm test_runner allure generate ./test_results -o ./allure-report --clean
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUBSECRET }}
         publish_dir: ./allure-report
+
