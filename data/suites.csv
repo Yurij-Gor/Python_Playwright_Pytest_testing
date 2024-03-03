@@ -1,0 +1,2 @@
+"Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
+"passed","Sun Mar 03 18:08:18 UTC 2024","Sun Mar 03 18:08:18 UTC 2024","417","tests","test_login","","","","test_login_success","This test successfully authorizes a user by email and password"
