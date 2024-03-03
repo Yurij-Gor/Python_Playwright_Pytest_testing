@@ -1,30 +1,23 @@
-# Название workflow, отображается в разделе Actions на GitHub
 name: Запуск тестов и публикация отчета Allure на Windows
 
-# Триггер для запуска workflow при каждом push в репозиторий
 on: [push]
 
-# Описание задачи
 jobs:
   test:
-    # Используем виртуальную среду с последней версией Windows
     runs-on: windows-latest
 
     steps:
-    # Шаг для клонирования репозитория
     - uses: actions/checkout@v2
 
-    # Установка Python версии 3.8
     - name: Установка Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.8'
 
-    # Установка зависимостей
     - name: Установка зависимостей
       run: |
-        pip install -r requirements.txt # Установка зависимостей из файла requirements.txt
-        pip install allure-pytest # Дополнительно устанавливаем allure-pytest для генерации отчетов
+        pip install -r requirements.txt
+        pip install allure-pytest
 
     - name: Add 'pages' directory to PYTHONPATH
       run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
@@ -32,20 +25,16 @@ jobs:
     - name: Установка браузеров для Playwright
       run: playwright install
 
-    - name: Установка Scoop и Allure Commandline
-      run: |
-        Set-ExecutionPolicy RemoteSigned -scope CurrentUser
-        Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
-        $env:Path += ";$env:USERPROFILE\scoop\shims"
-        scoop install allure
-
     - name: Запуск тестов и генерация результатов тестирования Allure
       run: |
         python -m pytest --alluredir=test_results/ tests/
 
-    - name: Генерация статического отчета Allure
-      run: |
-        allure generate test_results/ -o allure-report/ --clean
+    # Используйте GitHub Action для генерации отчета Allure
+    - name: Generate Allure report
+      uses: simple-elf/allure-report-action@v1
+      with:
+        allure_results: test_results/
+        allure_report: allure-report/
 
     - name: Публикация отчета Allure на GitHub Pages
       uses: crazy-max/ghaction-github-pages@v2
