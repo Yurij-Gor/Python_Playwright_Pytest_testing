@@ -32,6 +32,11 @@ jobs:
     - name: Установка браузеров для Playwright
       run: playwright install
 
+    - name: Установка Scoop
+      run: |
+        Set-ExecutionPolicy RemoteSigned -scope CurrentUser
+        Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
+
     - name: Установка Allure Commandline
       run: |
         scoop install allure
