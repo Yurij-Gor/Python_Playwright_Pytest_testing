@@ -46,7 +46,11 @@ jobs:
         path: test_results
 
     - name: Установка Allure CLI
-      run: sudo apt-get install allure -y
+      run: |
+        sudo apt-get install wget
+        wget https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.27.0/allure-commandline-2.27.0.tgz -O allure.tgz
+        sudo tar -zxvf allure.tgz -C /opt/
+        echo "export PATH=\$PATH:/opt/allure-commandline-2.27.0/bin" >> $GITHUB_ENV
 
     - name: Генерация отчета Allure
       run: allure generate test_results/ -o allure-report/ --clean
