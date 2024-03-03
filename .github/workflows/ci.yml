@@ -1,0 +1,41 @@
+# Название workflow, отображается в разделе Actions на GitHub
+name: Запуск тестов и публикация отчета Allure на Windows
+
+# Триггер для запуска workflow при каждом push в репозиторий
+on: [push]
+
+# Описание задачи
+jobs:
+  test:
+    # Используем виртуальную среду с последней версией Windows
+    runs-on: windows-latest
+
+    steps:
+    # Шаг для клонирования репозитория
+    - uses: actions/checkout@v2
+
+    # Установка Python версии 3.8
+    - name: Установка Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    # Установка зависимостей
+    - name: Установка зависимостей
+      run: |
+        pip install -r requirements.txt # Установка зависимостей из файла requirements.txt
+        pip install allure-pytest # Дополнительно устанавливаем allure-pytest для генерации отчетов
+
+    # Запуск тестов и генерация отчета Allure
+    - name: Запуск тестов и генерация отчета Allure
+      run: |
+        pytest --alluredir=test_results/ tests/ # Запускаем тесты, указываем директорию для сохранения результатов
+
+    # Публикация отчета Allure на GitHub Pages
+    - name: Публикация отчета Allure на GitHub Pages
+      uses: crazy-max/ghaction-github-pages@v2
+      with:
+        target_branch: gh-pages # Отчеты будут публиковаться в ветке gh-pages
+        build_dir: test_results # Директория с результатами тестов
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Используем автоматически созданный GitHub токен для аутентификации

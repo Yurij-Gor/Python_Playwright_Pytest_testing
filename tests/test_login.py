@@ -1,3 +1,4 @@
+import os
 import allure
 import pytest  # Импортируем pytest, фреймворк для написания и организации тестов.
 
@@ -13,9 +14,10 @@ from pages.login_page import LoginPage
 @pytest.fixture(scope="function")
 def page():
     # Запускаем Playwright в контекстном менеджере, чтобы он корректно закрывался после выполнения теста.
+    headless_mode = os.getenv('HEADLESS', 'false').lower() in ('true', '1', 't')
     with sync_playwright() as p:
         # Запускаем новый экземпляр браузера Chromium. headless=False означает, что браузер будет виден во время теста.
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=headless_mode)
         # Открываем новую страницу в браузере.
         page = browser.new_page()
         # "yield" возвращает объект страницы для использования в тесте.

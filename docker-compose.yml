@@ -7,6 +7,7 @@ services:
     container_name: pytest_runner_works1
     environment:
       - ENV=prod
+      - HEADLESS=true
     volumes:
       - .:/tests_project/
     command: ["python", "-m", "pytest", "-s", "--alluredir=test_results/", "tests/"]
