@@ -1,65 +1,49 @@
-name: Запуск тестов и генерация отчета Allure
+name: CI Workflow
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  test:
+  build-and-test:
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Установка Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
 
-    - name: Установка зависимостей
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Build Docker Image
       run: |
-        pip install -r requirements.txt
-        pip install allure-pytest
+        docker-compose build
 
-    - name: Установка браузеров для Playwright
-      run: playwright install
-
-    - name: Запуск тестов
+    - name: Run Tests in Docker
       run: |
-        python -m pytest --alluredir=test_results/ tests/
+        docker-compose up --exit-code-from test_runner
 
-    - name: Архивирование результатов тестов
-      uses: actions/upload-artifact@v2
-      with:
-        name: allure-results
-        path: test_results/
-
-  generate-report:
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Загрузка результатов тестов
-      uses: actions/download-artifact@v2
-      with:
-        name: allure-results
-        path: test_results
-
-    - name: Установка Allure CLI
+    - name: Copy Allure report from Docker container
       run: |
-        sudo apt-get install wget
-        wget https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.27.0/allure-commandline-2.27.0.tgz -O allure.tgz
-        sudo tar -zxvf allure.tgz -C /opt/
-        echo "/opt/allure-commandline-2.27.0/bin" >> $GITHUB_PATH
+        docker cp pytest_runner_works1:/tests_project/test_results ./test_results
 
-    - name: Генерация отчета Allure
-      run: allure generate test_results/ -o allure-report/ --clean
+    - name: Generate Allure Report
+      run: |
+        allure generate ./test_results -o ./allure-report --clean
 
-    - name: Публикация отчета Allure на GitHub Pages
-      uses: crazy-max/ghaction-github-pages@v2
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
       with:
-        target_branch: gh-pages
-        build_dir: allure-report
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUBSECRET }}
-
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./allure-report
