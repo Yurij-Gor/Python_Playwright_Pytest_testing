@@ -32,6 +32,10 @@ jobs:
     - name: Установка браузеров для Playwright
       run: playwright install
 
+    - name: Установка Allure Commandline
+      run: |
+        scoop install allure
+
     - name: Запуск тестов и генерация результатов тестирования Allure
       run: |
         python -m pytest --alluredir=test_results/ tests/
