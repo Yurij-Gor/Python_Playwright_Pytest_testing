@@ -50,7 +50,7 @@ jobs:
         sudo apt-get install wget
         wget https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.27.0/allure-commandline-2.27.0.tgz -O allure.tgz
         sudo tar -zxvf allure.tgz -C /opt/
-        echo "export PATH=\$PATH:/opt/allure-commandline-2.27.0/bin" >> $GITHUB_ENV
+        echo "/opt/allure-commandline-2.27.0/bin" >> $GITHUB_PATH
 
     - name: Генерация отчета Allure
       run: allure generate test_results/ -o allure-report/ --clean
