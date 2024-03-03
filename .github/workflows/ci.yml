@@ -44,4 +44,4 @@ jobs:
         target_branch: gh-pages # Отчеты будут публиковаться в ветке gh-pages
         build_dir: test_results # Директория с результатами тестов
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Используем автоматически созданный GitHub токен для аутентификации
+        GITHUB_TOKEN: ${{ secrets.GITHUBSECRET }} # Используем автоматически созданный GitHub токен для аутентификации
