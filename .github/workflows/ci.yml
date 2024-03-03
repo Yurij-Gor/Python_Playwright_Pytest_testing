@@ -1,4 +1,4 @@
-name: Запуск тестов и публикация отчета Allure на Windows
+name: Запуск тестов и генерация отчета Allure
 
 on: [push]
 
@@ -19,22 +19,34 @@ jobs:
         pip install -r requirements.txt
         pip install allure-pytest
 
-    - name: Add 'pages' directory to PYTHONPATH
-      run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
-
-    - name: Установка браузеров для Playwright
-      run: playwright install
-
-    - name: Запуск тестов и генерация результатов тестирования Allure
+    - name: Запуск тестов
       run: |
         python -m pytest --alluredir=test_results/ tests/
 
-    # Используйте GitHub Action для генерации отчета Allure
-    - name: Generate Allure report
-      uses: simple-elf/allure-report-action@v1
+    - name: Архивирование результатов тестов
+      uses: actions/upload-artifact@v2
       with:
-        allure_results: test_results/
-        allure_report: allure-report/
+        name: allure-results
+        path: test_results/
+
+  generate-report:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Загрузка результатов тестов
+      uses: actions/download-artifact@v2
+      with:
+        name: allure-results
+        path: test_results
+
+    - name: Установка Allure CLI
+      run: sudo apt-get install allure -y
+
+    - name: Генерация отчета Allure
+      run: allure generate test_results/ -o allure-report/ --clean
 
     - name: Публикация отчета Allure на GitHub Pages
       uses: crazy-max/ghaction-github-pages@v2
@@ -43,3 +55,4 @@ jobs:
         build_dir: allure-report
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUBSECRET }}
+
