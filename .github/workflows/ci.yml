@@ -37,6 +37,11 @@ jobs:
         Set-ExecutionPolicy RemoteSigned -scope CurrentUser
         Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
 
+    - name: Добавление Scoop в Path
+      run: |
+        $env:Path += ";$env:USERPROFILE\scoop\shims"
+        scoop status
+
     - name: Установка Allure Commandline
       run: |
         scoop install allure
